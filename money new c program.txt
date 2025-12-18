@@ -1,0 +1,432 @@
+2
+#include <stdio.h>
+
+int main(void) {
+    // CGI header (harmless in online compilers; useful for real CGI environments)
+    puts("Content-Type: text/html\n");
+
+    puts("<!doctype html>");
+    puts("<html lang='en'>");
+    puts("<head>");
+    puts("  <meta charset='utf-8' />");
+    puts("  <meta name='viewport' content='width=device-width, initial-scale=1' />");
+    puts("  <title>Personal Money Tracker – Daily + Max 30 Categories + Monthly Income</title>");
+    puts("  <style>");
+    puts("    body{font-family:system-ui,Segoe UI,Arial; margin:24px; background:#f8fafc;}");
+    puts("    .card{max-width:980px; margin:0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,.05);}");
+    puts("    .hdr{padding:16px 20px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between;}");
+    puts("    .hdr h1{font-size:20px; margin:0;}");
+    puts("    .content{padding:20px;}");
+    puts("    label{display:block; font-size:13px; color:#374151; margin:12px 0 6px;}");
+    puts("    input,select{width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;}");
+    puts("    button{padding:10px 14px; border:1px solid #2563eb; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;}");
+    puts("    button.sec{border-color:#64748b; background:#64748b;}");
+    puts("    button[disabled]{opacity:.6; cursor:not-allowed;}");
+    puts("    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}");
+    puts("    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}");
+    puts("    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}");
+    puts("    .muted{color:#6b7280; font-size:12px;}");
+    puts("    .tabs{display:flex; gap:10px; margin-bottom:12px;}");
+    puts("    .tabs button{background:none; border:none; color:#2563eb; padding:0; font-size:14px; cursor:pointer;}");
+    puts("    .tabs button.active{font-weight:600; text-decoration:underline;}");
+    puts("    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; margin:4px 6px 0 0; background:#eef2ff; border:1px solid #c7d2fe; border-radius:999px; font-size:12px;}");
+    puts("    .badge button{border:none; background:transparent; color:#ef4444; cursor:pointer; padding:0; font-weight:bold;}");
+    puts("    table{border-collapse:collapse; width:100%; margin-top:12px;}");
+    puts("    th,td{border:1px solid #e5e7eb; padding:8px; text-align:left; font-size:14px;}");
+    puts("    th{background:#f1f5f9;}");
+    puts("    .right{text-align:right;}");
+    puts("    .flex{display:flex; gap:10px; align-items:center;}");
+    puts("    .space{margin-top:16px;}");
+    puts("    .bar{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}");
+    puts("    .limit{color:#374151; font-size:12px; background:#fff8e1; border:1px solid #fde68a; padding:8px; border-radius:8px; display:inline-block;}");
+    puts("    .error{color:#b91c1c; font-size:13px;}");
+    puts("    .success{color:#065f46; font-size:13px;}");
+    puts("  </style>");
+    puts("</head>");
+    puts("<body>");
+
+    puts("<div class='card'>");
+    puts("  <div class='hdr'>");
+    puts("    <h1>Personal Money Tracker</h1>");
+    puts("    <div id='userInfo' class='muted'></div>");
+    puts("  </div>");
+
+    puts("  <div class='content'>");
+
+    // AUTH SCREENS (tabs as buttons)
+    puts("    <div id='auth'>");
+    puts("      <div class='tabs'>");
+    puts("        <button type='button' class='tab-btn active' data-tab='login'>Login</button>");
+    puts("        <button type='button' class='tab-btn' data-tab='signup'>Signup</button>");
+    puts("        <button type='button' class='tab-btn' data-tab='forgot'>Forgot Password</button>");
+    puts("      </div>");
+
+    puts("      <!-- Login -->");
+    puts("      <section id='tab-login'>");
+    puts("        <div class='row'>");
+    puts("          <div><label>Email</label><input id='loginEmail' type='email' placeholder='you@example.com' /></div>");
+    puts("          <div><label>Password</label><input id='loginPass' type='password' placeholder='********' /></div>");
+    puts("        </div>");
+    puts("        <div class='flex space'>");
+    puts("          <button onclick='doLogin()'>Login</button>");
+    puts("          <button class='sec' onclick='showTab(\"signup\")'>Go to Signup</button>");
+    puts("        </div>");
+    puts("        <div id='loginMsg' class='space'></div>");
+    puts("      </section>");
+
+    puts("      <!-- Signup -->");
+    puts("      <section id='tab-signup' style='display:none;'>");
+    puts("        <div class='row'>");
+    puts("          <div><label>Name</label><input id='suName' type='text' placeholder='Your Name' /></div>");
+    puts("          <div><label>Email</label><input id='suEmail' type='email' placeholder='you@example.com' /></div>");
+    puts("        </div>");
+    puts("        <div class='row'>");
+    puts("          <div><label>Password</label><input id='suPass' type='password' placeholder='At least 6 characters' /></div>");
+    puts("          <div><label>Confirm Password</label><input id='suConf' type='password' placeholder='Repeat password' /></div>");
+    puts("        </div>");
+    puts("        <div class='flex space'>");
+    puts("          <button onclick='doSignup()'>Create Account</button>");
+    puts("          <button class='sec' onclick='showTab(\"login\")'>Go to Login</button>");
+    puts("        </div>");
+    puts("        <div id='signupMsg' class='space'></div>");
+    puts("      </section>");
+
+    puts("      <!-- Forgot -->");
+    puts("      <section id='tab-forgot' style='display:none;'>");
+    puts("        <label>Email</label><input id='fpEmail' type='email' placeholder='you@example.com' />");
+    puts("        <div class='flex space'>");
+    puts("          <button onclick='doForgot()'>Reset Password (Demo)</button>");
+    puts("          <button class='sec' onclick='showTab(\"login\")'>Back to Login</button>");
+    puts("        </div>");
+    puts("        <div id='forgotMsg' class='space'></div>");
+    puts("      </section>");
+    puts("    </div><!-- /auth -->");
+
+    // APP (POST-LOGIN)
+    puts("    <section id='app' style='display:none;'>");
+
+    // Top bar: Day + Month
+    puts("      <div class='bar'>");
+    puts("        <button onclick='logout()'>Logout</button>");
+    puts("        <div class='grid2' style='width:100%'>");
+    puts("          <div><label class='muted' style='margin:0'>Day</label><input id='curDay' type='date' onchange='onDayChange()' /></div>");
+    puts("          <div><label class='muted' style='margin:0'>Month</label><input id='curMonth' type='month' onchange='onMonthChange()' /></div>");
+    puts("        </div>");
+    puts("        <span class='muted'>You are logged in.</span>");
+    puts("      </div>");
+
+    // Category Manager
+    puts("      <h3 class='space'>Categories (Max 30)</h3>");
+    puts("      <div class='row'>");
+    puts("        <div><label>New Category Name</label><input id='catName' type='text' placeholder='e.g., Food, Transport, Rent' /></div>");
+    puts("        <div><label style='visibility:hidden'>.</label><button id='addCatBtn' onclick='addCategory()'>Add Category</button></div>");
+    puts("      </div>");
+    puts("      <div id='catMsg' class='space'></div>");
+    puts("      <div id='catLimit' class='limit space'></div>");
+    puts("      <div id='catList' class='space'></div>");
+
+    // Monthly Income
+    puts("      <h3 class='space'>Set Monthly Income</h3>");
+    puts("      <div class='row'>");
+    puts("        <div><label>Month</label><input id='incMonth' type='month' /></div>");
+    puts("        <div><label>Income Amount</label><input id='incAmt' type='number' step='0.01' min='0' placeholder='0.00' /></div>");
+    puts("      </div>");
+    puts("      <div class='flex space'>");
+    puts("        <button onclick='addIncome()'>Save Income</button>");
+    puts("        <button class='sec' onclick='clearIncomeForMonth()'>Clear Income (selected month)</button>");
+    puts("      </div>");
+    puts("      <div id='incMsg' class='space'></div>");
+
+    // Add Expense
+    puts("      <h3 class='space'>Add Daily Expense</h3>");
+    puts("      <div class='row3'>");
+    puts("        <div><label>Date</label><input id='exDate' type='date' /></div>");
+    puts("        <div><label>Category</label><select id='exCat'></select></div>");
+    puts("        <div><label>Amount</label><input id='exAmt' type='number' step='0.01' min='0' placeholder='0.00' /></div>");
+    puts("      </div>");
+    puts("      <div class='flex space'>");
+    puts("        <button id='addExpBtn' onclick='addExpense()'>Add Expense</button>");
+    puts("        <button class='sec' onclick='clearAllExpenses()'>Clear All Expenses (this user)</button>");
+    puts("      </div>");
+    puts("      <div id='exMsg' class='space'></div>");
+
+    // Monthly Summary
+    puts("      <h3 class='space'>Monthly Summary</h3>");
+    puts("      <div id='monthlySummary' class='space'></div>");
+
+    // Daily Summary
+    puts("      <h3 class='space'>Daily Summary (Selected Day)</h3>");
+    puts("      <div id='summary' class='space'></div>");
+
+    // Table
+    puts("      <h3 class='space'>Expenses (Selected Day)</h3>");
+    puts("      <table id='exTable'>");
+    puts("        <thead><tr><th>#</th><th>Date</th><th>Category</th><th class='right'>Amount</th><th>Actions</th></tr></thead>");
+    puts("        <tbody></tbody>");
+    puts("        <tfoot><tr><td colspan='3'>Daily Total</td><td class='right' id='totalCell'>0.00</td><td></td></tr></tfoot>");
+    puts("      </table>");
+
+    puts("    </section><!-- /app -->");
+
+    // JavaScript
+    puts("    <script>");
+    puts("      // ===== Storage helpers =====");
+    puts("      const MAX_CAT = 30;");
+    puts("      function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h+=((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))}return (h>>>0).toString(16)}");
+    puts("      const LS = window.localStorage;");
+    puts("      function getUsers(){try{return JSON.parse(LS.getItem('users')||'{}')}catch(e){return {}}}");
+    puts("      function setUsers(u){LS.setItem('users', JSON.stringify(u))}");
+    puts("      function keyEx(email){return 'expenses:'+email}");
+    puts("      function keyCat(email){return 'categories:'+email}");
+    puts("      function keyInc(email){return 'income:'+email}     // month -> amount");
+    puts("      function getExpenses(email){try{return JSON.parse(LS.getItem(keyEx(email))||'[]')}catch(e){return []}}");
+    puts("      function setExpenses(email, arr){LS.setItem(keyEx(email), JSON.stringify(arr))}");
+    puts("      function getCategories(email){try{return JSON.parse(LS.getItem(keyCat(email))||'[]')}catch(e){return []}}");
+    puts("      function setCategories(email, arr){LS.setItem(keyCat(email), JSON.stringify(arr))}");
+    puts("      function getIncome(email){try{return JSON.parse(LS.getItem(keyInc(email))||'{}')}catch(e){return {}}}");
+    puts("      function setIncome(email, obj){LS.setItem(keyInc(email), JSON.stringify(obj))}");
+
+    puts("      // ===== App state =====");
+    puts("      let CURRENT = LS.getItem('currentUser')||'';");
+    puts("      let CURDAY   = LS.getItem('currentDay')   || new Date().toISOString().slice(0,10);");
+    puts("      let CURMONTH = LS.getItem('currentMonth') || new Date().toISOString().slice(0,7);");
+
+    puts("      // ===== Tabs: make sure clicks always work =====");
+    puts("      function showTab(name){");
+    puts("        ['login','signup','forgot'].forEach(t=>{");
+    puts("          document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';");
+    puts("        });");
+    puts("        document.querySelectorAll('.tab-btn').forEach(b=>{");
+    puts("          b.classList.toggle('active', b.dataset.tab===name);");
+    puts("        });");
+    puts("      }");
+    puts("      // Delegate clicks from tab buttons");
+    puts("      document.addEventListener('click', (e)=>{");
+    puts("        const btn = e.target.closest('.tab-btn');");
+    puts("        if(btn){ e.preventDefault(); showTab(btn.dataset.tab); }");
+    puts("      });");
+
+    puts("      // ===== UI routing =====");
+    puts("      function renderState(){");
+    puts("        document.getElementById('userInfo').textContent = CURRENT ? ('Signed in as '+CURRENT) : 'Not signed in';");
+    puts("        document.getElementById('auth').style.display = CURRENT ? 'none' : 'block';");
+    puts("        document.getElementById('app').style.display  = CURRENT ? 'block' : 'none';");
+    puts("        if(!CURRENT){");
+    puts("          showTab('login');");
+    puts("        }else{");
+    puts("          document.getElementById('curDay').value   = CURDAY;");
+    puts("          document.getElementById('exDate').value   = CURDAY;");
+    puts("          document.getElementById('curMonth').value = CURMONTH;");
+    puts("          document.getElementById('incMonth').value = CURMONTH;");
+    puts("          renderCategories(); renderCatDropdown();");
+    puts("          renderTable(); renderSummary(); renderMonthlySummary();");
+    puts("        }");
+    puts("      }");
+    puts("      document.addEventListener('DOMContentLoaded', renderState);");
+
+    puts("      // ===== Auth =====");
+    puts("      function doSignup(){");
+    puts("        const name = document.getElementById('suName').value.trim();");
+    puts("        const email= document.getElementById('suEmail').value.trim().toLowerCase();");
+    puts("        const p    = document.getElementById('suPass').value;");
+    puts("        const c    = document.getElementById('suConf').value;");
+    puts("        const msg  = document.getElementById('signupMsg'); msg.className='space'; msg.textContent='';");
+    puts("        if(!name||!email||!p||!c){msg.classList.add('error'); msg.textContent='All fields are required.'; return}");
+    puts("        if(p.length<6){msg.classList.add('error'); msg.textContent='Password must be at least 6 characters.'; return}");
+    puts("        if(p!==c){msg.classList.add('error'); msg.textContent='Passwords do not match.'; return}");
+    puts("        const users=getUsers(); if(users[email]){msg.classList.add('error'); msg.textContent='Account already exists.'; return}");
+    puts("        users[email]={name,passHash:hash(p)}; setUsers(users);");
+    puts("        msg.classList.add('success'); msg.textContent='Signup successful. You can now log in.'; showTab('login');");
+    puts("      }");
+
+    puts("      function doLogin(){");
+    puts("        const email=document.getElementById('loginEmail').value.trim().toLowerCase();");
+    puts("        const p    =document.getElementById('loginPass').value;");
+    puts("        const msg  =document.getElementById('loginMsg'); msg.className='space'; msg.textContent='';");
+    puts("        const users=getUsers(); const u=users[email];");
+    puts("        if(!u){msg.classList.add('error'); msg.textContent='No account found. Please sign up.'; return}");
+    puts("        if(u.passHash!==hash(p)){msg.classList.add('error'); msg.textContent='Incorrect password.'; return}");
+    puts("        CURRENT=email; LS.setItem('currentUser', CURRENT);");
+    puts("        msg.classList.add('success'); msg.textContent='Login successful';");
+    puts("        renderState();");
+    puts("      }");
+
+    puts("      function doForgot(){");
+    puts("        const email=document.getElementById('fpEmail').value.trim().toLowerCase();");
+    puts("        const msg  =document.getElementById('forgotMsg'); msg.className='space'; msg.textContent='';");
+    puts("        const users=getUsers(); if(!users[email]){msg.classList.add('error'); msg.textContent='No account found for this email.'; return}");
+    puts("        const np=prompt('Enter a new password (demo only):'); if(!np){msg.classList.add('error'); msg.textContent='Password reset cancelled.'; return}");
+    puts("        if(np.length<6){msg.classList.add('error'); msg.textContent='Password must be at least 6 characters.'; return}");
+    puts("        users[email].passHash = hash(np); setUsers(users);");
+    puts("        msg.classList.add('success'); msg.textContent='Password reset successful. You can log in with your new password.';");
+    puts("        showTab('login');");
+    puts("      }");
+
+    puts("      function logout(){CURRENT=''; LS.removeItem('currentUser'); renderState();}");
+
+    puts("      // ===== Day & Month =====");
+    puts("      function onDayChange(){");
+    puts("        CURDAY = document.getElementById('curDay').value || new Date().toISOString().slice(0,10);");
+    puts("        LS.setItem('currentDay', CURDAY);");
+    puts("        document.getElementById('exDate').value = CURDAY;");
+    puts("        renderTable(); renderSummary();");
+    puts("      }");
+    puts("      function onMonthChange(){");
+    puts("        CURMONTH = document.getElementById('curMonth').value || new Date().toISOString().slice(0,7);");
+    puts("        LS.setItem('currentMonth', CURMONTH);");
+    puts("        document.getElementById('incMonth').value = CURMONTH;");
+    puts("        renderMonthlySummary();");
+    puts("      }");
+
+    puts("      // ===== Categories =====");
+    puts("      function renderCategories(){");
+    puts("        const wrap=document.getElementById('catList');");
+    puts("        const arr=getCategories(CURRENT);");
+    puts("        wrap.innerHTML='';");
+    puts("        arr.forEach((name,i)=>{");
+    puts("          const span=document.createElement('span'); span.className='badge';");
+    puts("          span.innerHTML = name + ' ' + '<button title=\"Delete\" onclick=\"deleteCategory('+i+')\">X</button>'; wrap.appendChild(span);");
+    puts("        });");
+    puts("        const limit=document.getElementById('catLimit');");
+    puts("        limit.textContent = 'Categories: ' + arr.length + '/' + MAX_CAT + ' used.';");
+    puts("        document.getElementById('addCatBtn').disabled = (arr.length>=MAX_CAT);");
+    puts("      }");
+
+    puts("      function renderCatDropdown(){");
+    puts("        const sel=document.getElementById('exCat');");
+    puts("        const arr=getCategories(CURRENT);");
+    puts("        sel.innerHTML='';");
+    puts("        arr.forEach(name=>{");
+    puts("          const opt=document.createElement('option'); opt.value=name; opt.textContent=name; sel.appendChild(opt);");
+    puts("        });");
+    puts("        document.getElementById('addExpBtn').disabled = (arr.length===0);");
+    puts("      }");
+
+    puts("      function addCategory(){");
+    puts("        if(!CURRENT) return;");
+    puts("        const msg=document.getElementById('catMsg'); msg.className='space'; msg.textContent='';");
+    puts("        const name=document.getElementById('catName').value.trim();");
+    puts("        const arr=getCategories(CURRENT);");
+    puts("        if(arr.length>=MAX_CAT){msg.classList.add('error'); msg.textContent='Limit reached: Max '+MAX_CAT+' categories.'; return}");
+    puts("        if(!name){msg.classList.add('error'); msg.textContent='Category name is required.'; return}");
+    puts("        if(arr.some(x=>x.toLowerCase()===name.toLowerCase())){msg.classList.add('error'); msg.textContent='Category already exists.'; return}");
+    puts("        arr.push(name); setCategories(CURRENT, arr);");
+    puts("        document.getElementById('catName').value='';");
+    puts("        msg.classList.add('success'); msg.textContent='Category added.';");
+    puts("        renderCategories(); renderCatDropdown(); renderMonthlySummary(); renderSummary();");
+    puts("      }");
+
+    puts("      function deleteCategory(i){");
+    puts("        const arr=getCategories(CURRENT);");
+    puts("        if(i>=0 && i<arr.length){");
+    puts("          arr.splice(i,1); setCategories(CURRENT, arr);");
+    puts("          renderCategories(); renderCatDropdown(); renderMonthlySummary(); renderSummary();");
+    puts("        }");
+    puts("      }");
+
+    puts("      // ===== Income =====");
+    puts("      function addIncome(){");
+    puts("        if(!CURRENT) return;");
+    puts("        const m=document.getElementById('incMonth').value || CURMONTH;");
+    puts("        const a=parseFloat(document.getElementById('incAmt').value);");
+    puts("        const msg=document.getElementById('incMsg'); msg.className='space'; msg.textContent='';");
+    puts("        if(!m || isNaN(a) || a<0){msg.classList.add('error'); msg.textContent='Provide a valid month and non-negative income amount.'; return}");
+    puts("        const obj=getIncome(CURRENT); obj[m]=a; setIncome(CURRENT, obj);");
+    puts("        document.getElementById('incAmt').value='';");
+    puts("        msg.classList.add('success'); msg.textContent='Monthly income saved.';");
+    puts("        CURMONTH=m; document.getElementById('curMonth').value = CURMONTH;");
+    puts("        renderMonthlySummary();");
+    puts("      }");
+
+    puts("      function clearIncomeForMonth(){");
+    puts("        if(!CURRENT) return;");
+    puts("        const obj=getIncome(CURRENT);");
+    puts("        if(obj[CURMONTH]){delete obj[CURMONTH]; setIncome(CURRENT, obj);} ");
+    puts("        renderMonthlySummary();");
+    puts("      }");
+
+    puts("      // ===== Expenses =====");
+    puts("      function addExpense(){");
+    puts("        if(!CURRENT) return;");
+    puts("        const d=document.getElementById('exDate').value || CURDAY;");
+    puts("        const cat=document.getElementById('exCat').value;");
+    puts("        const amt=parseFloat(document.getElementById('exAmt').value);");
+    puts("        const msg=document.getElementById('exMsg'); msg.className='space'; msg.textContent='';");
+    puts("        if(!d||!cat||isNaN(amt)||amt<0){msg.classList.add('error'); msg.textContent='Please provide date, category, and a valid amount.'; return}");
+    puts("        const arr=getExpenses(CURRENT); arr.push({date:d,category:cat,amount:amt}); setExpenses(CURRENT, arr);");
+    puts("        document.getElementById('exAmt').value='';");
+    puts("        msg.classList.add('success'); msg.textContent='Expense added.';");
+    puts("        document.getElementById('exDate').value=d; CURDAY=d; LS.setItem('currentDay', CURDAY);");
+    puts("        renderTable(); renderSummary(); renderMonthlySummary();");
+    puts("      }");
+
+    puts("      function clearAllExpenses(){");
+    puts("        if(!CURRENT) return;");
+    puts("        if(!confirm('Delete ALL expenses for this user?')) return;");
+    puts("        setExpenses(CURRENT, []);");
+    puts("        renderTable(); renderSummary(); renderMonthlySummary();");
+    puts("      }");
+
+    puts("      function deleteRow(i){");
+    puts("        const arr=getExpenses(CURRENT);");
+    puts("        // Find the i-th item for CURDAY and map back to original index");
+    puts("        let count=0, origIndex=-1;");
+    puts("        for(let k=0;k<arr.length;k++){");
+    puts("          if((arr[k].date||'')===CURDAY){ if(count===i){origIndex=k; break} count++; }");
+    puts("        }");
+    puts("        if(origIndex>=0){");
+    puts("          arr.splice(origIndex,1); setExpenses(CURRENT, arr);");
+    puts("          renderTable(); renderSummary(); renderMonthlySummary();");
+    puts("        }");
+    puts("      }");
+
+    puts("      // ===== Renderers =====");
+    puts("      function renderTable(){");
+    puts("        const tbody=document.querySelector('#exTable tbody');");
+    puts("        tbody.innerHTML='';");
+    puts("        const arr=getExpenses(CURRENT).filter(x => (x.date||'')===CURDAY);");
+    puts("        let total=0;");
+    puts("        arr.forEach((x,i)=>{");
+    puts("          total+=x.amount;");
+    puts("          const tr=document.createElement('tr');");
+    puts("          tr.innerHTML = '<td>'+(i+1)+'</td><td>'+x.date+'</td><td>'+x.category+'</td><td class=\"right\">'+x.amount.toFixed(2)+'</td><td><button class=\"sec\" onclick=\"deleteRow('+i+')\">Delete</button></td>'; tbody.appendChild(tr);");
+    puts("        });");
+    puts("        document.getElementById('totalCell').textContent=total.toFixed(2);");
+    puts("      }");
+
+    puts("      function renderSummary(){");
+    puts("        const arr=getExpenses(CURRENT).filter(x => (x.date||'')===CURDAY);");
+    puts("        let total=0; const byCat={};");
+    puts("        arr.forEach(x=>{ total+=x.amount; byCat[x.category]=(byCat[x.category]||0)+x.amount; });");
+    puts("        const sum=document.getElementById('summary'); sum.innerHTML='';");
+    puts("        const head=document.createElement('div'); head.innerHTML='<p><strong>Selected day:</strong> '+CURDAY+'</p>'; sum.appendChild(head);");
+    puts("        const stats=document.createElement('div'); stats.innerHTML='<p><strong>Daily total:</strong> '+total.toFixed(2)+' &nbsp; | &nbsp; <strong>Entries:</strong> '+arr.length+'</p>'; sum.appendChild(stats);");
+    puts("        const wrap=document.createElement('div');");
+    puts("        for(const k in byCat){const span=document.createElement('span'); span.className='badge'; span.textContent=k+': '+byCat[k].toFixed(2); wrap.appendChild(span);} sum.appendChild(wrap);");
+    puts("      }");
+
+    puts("      function renderMonthlySummary(){");
+    puts("        const all=getExpenses(CURRENT);");
+    puts("        const arr=all.filter(x => (x.date||'').slice(0,7)===CURMONTH);");
+    puts("        let total=0; const byCat={};");
+    puts("        arr.forEach(x=>{ total+=x.amount; byCat[x.category]=(byCat[x.category]||0)+x.amount; });");
+    puts("        const incomeObj=getIncome(CURRENT);");
+    puts("        const inc=parseFloat(incomeObj[CURMONTH]||0);");
+    puts("        const bal=inc-total;");
+    puts("        const box=document.getElementById('monthlySummary'); box.innerHTML='';");
+    puts("        const head=document.createElement('div'); head.innerHTML='<p><strong>Selected month:</strong> '+CURMONTH+'</p>'; box.appendChild(head);");
+    puts("        const stats=document.createElement('div');");
+    puts("        stats.innerHTML='<p><strong>Monthly income:</strong> '+inc.toFixed(2)+' &nbsp; | &nbsp; <strong>Monthly expenses:</strong> '+total.toFixed(2)+' &nbsp; | &nbsp; <strong>Balance:</strong> '+bal.toFixed(2)+' &nbsp; | &nbsp; <strong>Entries:</strong> '+arr.length+'</p>'; box.appendChild(stats);");
+    puts("        const wrap=document.createElement('div');");
+    puts("        for(const k in byCat){const span=document.createElement('span'); span.className='badge'; span.textContent=k+': '+byCat[k].toFixed(2); wrap.appendChild(span);} box.appendChild(wrap);");
+    puts("      }");
+    puts("    </script>");
+
+    puts("  </div>");
+    puts("</div>");
+
+    puts("</body>");
+    puts("</html>");
+
+    return 0;
+}

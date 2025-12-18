@@ -1,0 +1,377 @@
+
+Content-Type: text/html
+
+<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>Personal Money Tracker – Daily + Max 30 Categories + Monthly Income</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Arial; margin:24px; background:#f8fafc;}
+    .card{max-width:980px; margin:0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,.05);}
+    .hdr{padding:16px 20px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between;}
+    .hdr h1{font-size:20px; margin:0;}
+    .content{padding:20px;}
+    label{display:block; font-size:13px; color:#374151; margin:12px 0 6px;}
+    input,select{width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;}
+    button{padding:10px 14px; border:1px solid #2563eb; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;}
+    button.sec{border-color:#64748b; background:#64748b;}
+    button[disabled]{opacity:.6; cursor:not-allowed;}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .muted{color:#6b7280; font-size:12px;}
+    .tabs{display:flex; gap:10px; margin-bottom:12px;}
+    .tabs button{background:none; border:none; color:#2563eb; padding:0; font-size:14px; cursor:pointer;}
+    .tabs button.active{font-weight:600; text-decoration:underline;}
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; margin:4px 6px 0 0; background:#eef2ff; border:1px solid #c7d2fe; border-radius:999px; font-size:12px;}
+    .badge button{border:none; background:transparent; color:#ef4444; cursor:pointer; padding:0; font-weight:bold;}
+    table{border-collapse:collapse; width:100%; margin-top:12px;}
+    th,td{border:1px solid #e5e7eb; padding:8px; text-align:left; font-size:14px;}
+    th{background:#f1f5f9;}
+    .right{text-align:right;}
+    .flex{display:flex; gap:10px; align-items:center;}
+    .space{margin-top:16px;}
+    .bar{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+    .limit{color:#374151; font-size:12px; background:#fff8e1; border:1px solid #fde68a; padding:8px; border-radius:8px; display:inline-block;}
+    .error{color:#b91c1c; font-size:13px;}
+    .success{color:#065f46; font-size:13px;}
+  </style>
+</head>
+<body>
+<div class='card'>
+  <div class='hdr'>
+    <h1>Personal Money Tracker</h1>
+    <div id='userInfo' class='muted'></div>
+  </div>
+  <div class='content'>
+    <div id='auth'>
+      <div class='tabs'>
+        <button type='button' class='tab-btn active' data-tab='login'>Login</button>
+        <button type='button' class='tab-btn' data-tab='signup'>Signup</button>
+        <button type='button' class='tab-btn' data-tab='forgot'>Forgot Password</button>
+      </div>
+      <!-- Login -->
+      <section id='tab-login'>
+        <div class='row'>
+          <div><label>Email</label><input id='loginEmail' type='email' placeholder='you@example.com' /></div>
+          <div><label>Password</label><input id='loginPass' type='password' placeholder='********' /></div>
+        </div>
+        <div class='flex space'>
+          <button onclick='doLogin()'>Login</button>
+          <button class='sec' onclick='showTab("signup")'>Go to Signup</button>
+        </div>
+        <div id='loginMsg' class='space'></div>
+      </section>
+      <!-- Signup -->
+      <section id='tab-signup' style='display:none;'>
+        <div class='row'>
+          <div><label>Name</label><input id='suName' type='text' placeholder='Your Name' /></div>
+          <div><label>Email</label><input id='suEmail' type='email' placeholder='you@example.com' /></div>
+        </div>
+        <div class='row'>
+          <div><label>Password</label><input id='suPass' type='password' placeholder='At least 6 characters' /></div>
+          <div><label>Confirm Password</label><input id='suConf' type='password' placeholder='Repeat password' /></div>
+        </div>
+        <div class='flex space'>
+          <button onclick='doSignup()'>Create Account</button>
+          <button class='sec' onclick='showTab("login")'>Go to Login</button>
+        </div>
+        <div id='signupMsg' class='space'></div>
+      </section>
+      <!-- Forgot -->
+      <section id='tab-forgot' style='display:none;'>
+        <label>Email</label><input id='fpEmail' type='email' placeholder='you@example.com' />
+        <div class='flex space'>
+          <button onclick='doForgot()'>Reset Password (Demo)</button>
+          <button class='sec' onclick='showTab("login")'>Back to Login</button>
+        </div>
+        <div id='forgotMsg' class='space'></div>
+      </section>
+    </div><!-- /auth -->
+    <section id='app' style='display:none;'>
+      <div class='bar'>
+        <button onclick='logout()'>Logout</button>
+        <div class='grid2' style='width:100%'>
+          <div><label class='muted' style='margin:0'>Day</label><input id='curDay' type='date' onchange='onDayChange()' /></div>
+          <div><label class='muted' style='margin:0'>Month</label><input id='curMonth' type='month' onchange='onMonthChange()' /></div>
+        </div>
+        <span class='muted'>You are logged in.</span>
+      </div>
+      <h3 class='space'>Categories (Max 30)</h3>
+      <div class='row'>
+        <div><label>New Category Name</label><input id='catName' type='text' placeholder='e.g., Food, Transport, Rent' /></div>
+        <div><label style='visibility:hidden'>.</label><button id='addCatBtn' onclick='addCategory()'>Add Category</button></div>
+      </div>
+      <div id='catMsg' class='space'></div>
+      <div id='catLimit' class='limit space'></div>
+      <div id='catList' class='space'></div>
+      <h3 class='space'>Set Monthly Income</h3>
+      <div class='row'>
+        <div><label>Month</label><input id='incMonth' type='month' /></div>
+        <div><label>Income Amount</label><input id='incAmt' type='number' step='0.01' min='0' placeholder='0.00' /></div>
+      </div>
+      <div class='flex space'>
+        <button onclick='addIncome()'>Save Income</button>
+        <button class='sec' onclick='clearIncomeForMonth()'>Clear Income (selected month)</button>
+      </div>
+      <div id='incMsg' class='space'></div>
+      <h3 class='space'>Add Daily Expense</h3>
+      <div class='row3'>
+        <div><label>Date</label><input id='exDate' type='date' /></div>
+        <div><label>Category</label><select id='exCat'></select></div>
+        <div><label>Amount</label><input id='exAmt' type='number' step='0.01' min='0' placeholder='0.00' /></div>
+      </div>
+      <div class='flex space'>
+        <button id='addExpBtn' onclick='addExpense()'>Add Expense</button>
+        <button class='sec' onclick='clearAllExpenses()'>Clear All Expenses (this user)</button>
+      </div>
+      <div id='exMsg' class='space'></div>
+      <h3 class='space'>Monthly Summary</h3>
+      <div id='monthlySummary' class='space'></div>
+      <h3 class='space'>Daily Summary (Selected Day)</h3>
+      <div id='summary' class='space'></div>
+      <h3 class='space'>Expenses (Selected Day)</h3>
+      <table id='exTable'>
+        <thead><tr><th>#</th><th>Date</th><th>Category</th><th class='right'>Amount</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan='3'>Daily Total</td><td class='right' id='totalCell'>0.00</td><td></td></tr></tfoot>
+      </table>
+    </section><!-- /app -->
+    <script>
+      // ===== Storage helpers =====
+      const MAX_CAT = 30;
+      function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h+=((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))}return (h>>>0).toString(16)}
+      const LS = window.localStorage;
+      function getUsers(){try{return JSON.parse(LS.getItem('users')||'{}')}catch(e){return {}}}
+      function setUsers(u){LS.setItem('users', JSON.stringify(u))}
+      function keyEx(email){return 'expenses:'+email}
+      function keyCat(email){return 'categories:'+email}
+      function keyInc(email){return 'income:'+email}     // month -> amount
+      function getExpenses(email){try{return JSON.parse(LS.getItem(keyEx(email))||'[]')}catch(e){return []}}
+      function setExpenses(email, arr){LS.setItem(keyEx(email), JSON.stringify(arr))}
+      function getCategories(email){try{return JSON.parse(LS.getItem(keyCat(email))||'[]')}catch(e){return []}}
+      function setCategories(email, arr){LS.setItem(keyCat(email), JSON.stringify(arr))}
+      function getIncome(email){try{return JSON.parse(LS.getItem(keyInc(email))||'{}')}catch(e){return {}}}
+      function setIncome(email, obj){LS.setItem(keyInc(email), JSON.stringify(obj))}
+      // ===== App state =====
+      let CURRENT = LS.getItem('currentUser')||'';
+      let CURDAY   = LS.getItem('currentDay')   || new Date().toISOString().slice(0,10);
+      let CURMONTH = LS.getItem('currentMonth') || new Date().toISOString().slice(0,7);
+      // ===== Tabs: make sure clicks always work =====
+      function showTab(name){
+        ['login','signup','forgot'].forEach(t=>{
+          document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
+        });
+        document.querySelectorAll('.tab-btn').forEach(b=>{
+          b.classList.toggle('active', b.dataset.tab===name);
+        });
+      }
+      // Delegate clicks from tab buttons
+      document.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.tab-btn');
+        if(btn){ e.preventDefault(); showTab(btn.dataset.tab); }
+      });
+      // ===== UI routing =====
+      function renderState(){
+        document.getElementById('userInfo').textContent = CURRENT ? ('Signed in as '+CURRENT) : 'Not signed in';
+        document.getElementById('auth').style.display = CURRENT ? 'none' : 'block';
+        document.getElementById('app').style.display  = CURRENT ? 'block' : 'none';
+        if(!CURRENT){
+          showTab('login');
+        }else{
+          document.getElementById('curDay').value   = CURDAY;
+          document.getElementById('exDate').value   = CURDAY;
+          document.getElementById('curMonth').value = CURMONTH;
+          document.getElementById('incMonth').value = CURMONTH;
+          renderCategories(); renderCatDropdown();
+          renderTable(); renderSummary(); renderMonthlySummary();
+        }
+      }
+      document.addEventListener('DOMContentLoaded', renderState);
+      // ===== Auth =====
+      function doSignup(){
+        const name = document.getElementById('suName').value.trim();
+        const email= document.getElementById('suEmail').value.trim().toLowerCase();
+        const p    = document.getElementById('suPass').value;
+        const c    = document.getElementById('suConf').value;
+        const msg  = document.getElementById('signupMsg'); msg.className='space'; msg.textContent='';
+        if(!name||!email||!p||!c){msg.classList.add('error'); msg.textContent='All fields are required.'; return}
+        if(p.length<6){msg.classList.add('error'); msg.textContent='Password must be at least 6 characters.'; return}
+        if(p!==c){msg.classList.add('error'); msg.textContent='Passwords do not match.'; return}
+        const users=getUsers(); if(users[email]){msg.classList.add('error'); msg.textContent='Account already exists.'; return}
+        users[email]={name,passHash:hash(p)}; setUsers(users);
+        msg.classList.add('success'); msg.textContent='Signup successful. You can now log in.'; showTab('login');
+      }
+      function doLogin(){
+        const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+        const p    =document.getElementById('loginPass').value;
+        const msg  =document.getElementById('loginMsg'); msg.className='space'; msg.textContent='';
+        const users=getUsers(); const u=users[email];
+        if(!u){msg.classList.add('error'); msg.textContent='No account found. Please sign up.'; return}
+        if(u.passHash!==hash(p)){msg.classList.add('error'); msg.textContent='Incorrect password.'; return}
+        CURRENT=email; LS.setItem('currentUser', CURRENT);
+        msg.classList.add('success'); msg.textContent='Login successful';
+        renderState();
+      }
+      function doForgot(){
+        const email=document.getElementById('fpEmail').value.trim().toLowerCase();
+        const msg  =document.getElementById('forgotMsg'); msg.className='space'; msg.textContent='';
+        const users=getUsers(); if(!users[email]){msg.classList.add('error'); msg.textContent='No account found for this email.'; return}
+        const np=prompt('Enter a new password (demo only):'); if(!np){msg.classList.add('error'); msg.textContent='Password reset cancelled.'; return}
+        if(np.length<6){msg.classList.add('error'); msg.textContent='Password must be at least 6 characters.'; return}
+        users[email].passHash = hash(np); setUsers(users);
+        msg.classList.add('success'); msg.textContent='Password reset successful. You can log in with your new password.';
+        showTab('login');
+      }
+      function logout(){CURRENT=''; LS.removeItem('currentUser'); renderState();}
+      // ===== Day & Month =====
+      function onDayChange(){
+        CURDAY = document.getElementById('curDay').value || new Date().toISOString().slice(0,10);
+        LS.setItem('currentDay', CURDAY);
+        document.getElementById('exDate').value = CURDAY;
+        renderTable(); renderSummary();
+      }
+      function onMonthChange(){
+        CURMONTH = document.getElementById('curMonth').value || new Date().toISOString().slice(0,7);
+        LS.setItem('currentMonth', CURMONTH);
+        document.getElementById('incMonth').value = CURMONTH;
+        renderMonthlySummary();
+      }
+      // ===== Categories =====
+      function renderCategories(){
+        const wrap=document.getElementById('catList');
+        const arr=getCategories(CURRENT);
+        wrap.innerHTML='';
+        arr.forEach((name,i)=>{
+          const span=document.createElement('span'); span.className='badge';
+          span.innerHTML = name + ' ' + '<button title="Delete" onclick="deleteCategory('+i+')">X</button>'; wrap.appendChild(span);
+        });
+        const limit=document.getElementById('catLimit');
+        limit.textContent = 'Categories: ' + arr.length + '/' + MAX_CAT + ' used.';
+        document.getElementById('addCatBtn').disabled = (arr.length>=MAX_CAT);
+      }
+      function renderCatDropdown(){
+        const sel=document.getElementById('exCat');
+        const arr=getCategories(CURRENT);
+        sel.innerHTML='';
+        arr.forEach(name=>{
+          const opt=document.createElement('option'); opt.value=name; opt.textContent=name; sel.appendChild(opt);
+        });
+        document.getElementById('addExpBtn').disabled = (arr.length===0);
+      }
+      function addCategory(){
+        if(!CURRENT) return;
+        const msg=document.getElementById('catMsg'); msg.className='space'; msg.textContent='';
+        const name=document.getElementById('catName').value.trim();
+        const arr=getCategories(CURRENT);
+        if(arr.length>=MAX_CAT){msg.classList.add('error'); msg.textContent='Limit reached: Max '+MAX_CAT+' categories.'; return}
+        if(!name){msg.classList.add('error'); msg.textContent='Category name is required.'; return}
+        if(arr.some(x=>x.toLowerCase()===name.toLowerCase())){msg.classList.add('error'); msg.textContent='Category already exists.'; return}
+        arr.push(name); setCategories(CURRENT, arr);
+        document.getElementById('catName').value='';
+        msg.classList.add('success'); msg.textContent='Category added.';
+        renderCategories(); renderCatDropdown(); renderMonthlySummary(); renderSummary();
+      }
+      function deleteCategory(i){
+        const arr=getCategories(CURRENT);
+        if(i>=0 && i<arr.length){
+          arr.splice(i,1); setCategories(CURRENT, arr);
+          renderCategories(); renderCatDropdown(); renderMonthlySummary(); renderSummary();
+        }
+      }
+      // ===== Income =====
+      function addIncome(){
+        if(!CURRENT) return;
+        const m=document.getElementById('incMonth').value || CURMONTH;
+        const a=parseFloat(document.getElementById('incAmt').value);
+        const msg=document.getElementById('incMsg'); msg.className='space'; msg.textContent='';
+        if(!m || isNaN(a) || a<0){msg.classList.add('error'); msg.textContent='Provide a valid month and non-negative income amount.'; return}
+        const obj=getIncome(CURRENT); obj[m]=a; setIncome(CURRENT, obj);
+        document.getElementById('incAmt').value='';
+        msg.classList.add('success'); msg.textContent='Monthly income saved.';
+        CURMONTH=m; document.getElementById('curMonth').value = CURMONTH;
+        renderMonthlySummary();
+      }
+      function clearIncomeForMonth(){
+        if(!CURRENT) return;
+        const obj=getIncome(CURRENT);
+        if(obj[CURMONTH]){delete obj[CURMONTH]; setIncome(CURRENT, obj);} 
+        renderMonthlySummary();
+      }
+      // ===== Expenses =====
+      function addExpense(){
+        if(!CURRENT) return;
+        const d=document.getElementById('exDate').value || CURDAY;
+        const cat=document.getElementById('exCat').value;
+        const amt=parseFloat(document.getElementById('exAmt').value);
+        const msg=document.getElementById('exMsg'); msg.className='space'; msg.textContent='';
+        if(!d||!cat||isNaN(amt)||amt<0){msg.classList.add('error'); msg.textContent='Please provide date, category, and a valid amount.'; return}
+        const arr=getExpenses(CURRENT); arr.push({date:d,category:cat,amount:amt}); setExpenses(CURRENT, arr);
+        document.getElementById('exAmt').value='';
+        msg.classList.add('success'); msg.textContent='Expense added.';
+        document.getElementById('exDate').value=d; CURDAY=d; LS.setItem('currentDay', CURDAY);
+        renderTable(); renderSummary(); renderMonthlySummary();
+      }
+      function clearAllExpenses(){
+        if(!CURRENT) return;
+        if(!confirm('Delete ALL expenses for this user?')) return;
+        setExpenses(CURRENT, []);
+        renderTable(); renderSummary(); renderMonthlySummary();
+      }
+      function deleteRow(i){
+        const arr=getExpenses(CURRENT);
+        // Find the i-th item for CURDAY and map back to original index
+        let count=0, origIndex=-1;
+        for(let k=0;k<arr.length;k++){
+          if((arr[k].date||'')===CURDAY){ if(count===i){origIndex=k; break} count++; }
+        }
+        if(origIndex>=0){
+          arr.splice(origIndex,1); setExpenses(CURRENT, arr);
+          renderTable(); renderSummary(); renderMonthlySummary();
+        }
+      }
+      // ===== Renderers =====
+      function renderTable(){
+        const tbody=document.querySelector('#exTable tbody');
+        tbody.innerHTML='';
+        const arr=getExpenses(CURRENT).filter(x => (x.date||'')===CURDAY);
+        let total=0;
+        arr.forEach((x,i)=>{
+          total+=x.amount;
+          const tr=document.createElement('tr');
+          tr.innerHTML = '<td>'+(i+1)+'</td><td>'+x.date+'</td><td>'+x.category+'</td><td class="right">'+x.amount.toFixed(2)+'</td><td><button class="sec" onclick="deleteRow('+i+')">Delete</button></td>'; tbody.appendChild(tr);
+        });
+        document.getElementById('totalCell').textContent=total.toFixed(2);
+      }
+      function renderSummary(){
+        const arr=getExpenses(CURRENT).filter(x => (x.date||'')===CURDAY);
+        let total=0; const byCat={};
+        arr.forEach(x=>{ total+=x.amount; byCat[x.category]=(byCat[x.category]||0)+x.amount; });
+        const sum=document.getElementById('summary'); sum.innerHTML='';
+        const head=document.createElement('div'); head.innerHTML='<p><strong>Selected day:</strong> '+CURDAY+'</p>'; sum.appendChild(head);
+        const stats=document.createElement('div'); stats.innerHTML='<p><strong>Daily total:</strong> '+total.toFixed(2)+' &nbsp; | &nbsp; <strong>Entries:</strong> '+arr.length+'</p>'; sum.appendChild(stats);
+        const wrap=document.createElement('div');
+        for(const k in byCat){const span=document.createElement('span'); span.className='badge'; span.textContent=k+': '+byCat[k].toFixed(2); wrap.appendChild(span);} sum.appendChild(wrap);
+      }
+      function renderMonthlySummary(){
+        const all=getExpenses(CURRENT);
+        const arr=all.filter(x => (x.date||'').slice(0,7)===CURMONTH);
+        let total=0; const byCat={};
+        arr.forEach(x=>{ total+=x.amount; byCat[x.category]=(byCat[x.category]||0)+x.amount; });
+        const incomeObj=getIncome(CURRENT);
+        const inc=parseFloat(incomeObj[CURMONTH]||0);
+        const bal=inc-total;
+        const box=document.getElementById('monthlySummary'); box.innerHTML='';
+        const head=document.createElement('div'); head.innerHTML='<p><strong>Selected month:</strong> '+CURMONTH+'</p>'; box.appendChild(head);
+        const stats=document.createElement('div');
+        stats.innerHTML='<p><strong>Monthly income:</strong> '+inc.toFixed(2)+' &nbsp; | &nbsp; <strong>Monthly expenses:</strong> '+total.toFixed(2)+' &nbsp; | &nbsp; <strong>Balance:</strong> '+bal.toFixed(2)+' &nbsp; | &nbsp; <strong>Entries:</strong> '+arr.length+'</p>'; box.appendChild(stats);
+        const wrap=document.createElement('div');
+        for(const k in byCat){const span=document.createElement('span'); span.className='badge'; span.textContent=k+': '+byCat[k].toFixed(2); wrap.appendChild(span);} box.appendChild(wrap);
+      }
+    </script>
+  </div>
+</div>
+</body>
+</html>
